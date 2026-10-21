@@ -24,3 +24,4 @@ We're currently working on requirements and planning. The features listed above 
 - Siddharth Mangipudi
 - Nick Turek
 - Kyu Han
+- Dev Weiss
