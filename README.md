@@ -25,3 +25,4 @@ We're currently working on requirements and planning. The features listed above 
 - Nick Turek
 - Kyu Han
 - Dev Weiss
+- Nile Chambers
