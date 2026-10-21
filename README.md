@@ -22,3 +22,4 @@ We're currently working on requirements and planning. The features listed above 
 ## Team Members
 
 - Siddharth Mangipudi
+- Nick Turek
