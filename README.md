@@ -8,12 +8,11 @@ Finding parking in Oakland can take longer than expected, especially when you're
 
 - View the number of available parking spaces within a selected area.
 - Refresh the map to check for updated availability.
-- Filter parking results, with the supported filters still being decided.
 - Save favorite parking spots or areas.
 - Report incorrect parking availability.
 - Open supported third-party services to pay for or reserve parking.
 
-We're also considering price information, individual parking spot markers, and historical parking data. Directions and notifications about busy events or closures are outside our planned scope for this semester.
+We're also considering price information and individual parking spot markers. Historical parking data, directions, filtering parking results and notifications about busy events or closures are outside the current semester backlog.
 
 ## Project Status
 
