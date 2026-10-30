@@ -12,7 +12,7 @@ As a driver, I would like to know the total number of available parking slots in
 
 FR: FR1  
 NFR: NFR4  
-Priority: TODO  
+Priority: Must  
 MVP: TODO
 
 - [ ] It should be shown on the map the total number of available parking slots in the specified area.
@@ -25,7 +25,7 @@ MVP: TODO
 As a driver, I wish to manually refresh information about parking so that I can find out about any changes in the availability of parking places before making my final decision on where to park.
 
 FR: FR3  
-Priority: TODO  
+Priority: Must  
 MVP: TODO
 
 - [ ] The refresh control appears on the mapping of the parking area.
@@ -40,7 +40,7 @@ As a driver, I would like to have my parking statuses updated automatically whil
 
 FR: TODO  
 NFR: NFR1  
-Priority: TODO  
+Priority: Must  
 MVP: TODO
 
 - [ ] While the app is running on the phone and the internet is available, parking statuses will be refreshed automatically every five minutes.
@@ -54,7 +54,7 @@ As a driver, I expect to filter parking places by their prices to select free sp
 
 FR: FR5  
 NFR: NFR4  
-Priority: TODO  
+Priority: Could  
 MVP: TODO
 
 - [ ] Customers are able to set a price range for parking.
@@ -70,7 +70,7 @@ As a driver, I hope to filter my parking lot based on the parking type, which en
 
 FR: FR5  
 NFR: NFR4  
-Priority: TODO  
+Priority: Could  
 MVP: TODO
 
 - [ ] Having the ability to choose one or more types of parking spots, such as on-street, garage, and mentioned respectively, users receive only the spots matching selected type(s).
@@ -85,7 +85,7 @@ As a driver, I would like to have access to the parking information which I acce
 
 FR: FR1  
 NFR: NFR5  
-Priority: TODO  
+Priority: Should  
 MVP: TODO
 
 - [ ] When there is no communication line with the device, the application will continue to show the latest information available in its memory.
@@ -100,7 +100,7 @@ As a driver, I want to filter parking options by the needed time frame for avail
 
 FR: FR5  
 NFR: NFR4  
-Priority: TODO  
+Priority: Could  
 MVP: TODO
 
 - [ ] A person can set the needed time frame for parking.
@@ -116,7 +116,7 @@ As a driver, I want to filter parking locations by minimum vehicle height cleara
 
 FR: FR5  
 NFR: NFR4  
-Priority: TODO  
+Priority: Should  
 MVP: TODO
 
 - [ ] The user is able to provide a minimum vehicle height clearance requirement.
@@ -139,7 +139,7 @@ Users will be able to register their favorite parking spots, look at their list 
 As a driver, I wish to see the precise places I have saved for parking in an exclusive area of favorites.
 
 FR: FR6  
-Priority: TODO  
+Priority: Must  
 MVP: TODO
 
 - [ ] The application must include a distinct screen for viewing saved favorites.
@@ -152,7 +152,7 @@ MVP: TODO
 A driver would like to be able to put the places relevant to him/her first in the favorites list.
 
 FR: FR6  
-Priority: TODO  
+Priority: Must  
 MVP: TODO
 
 - [ ] The individual can change the sequence of his/her saved preferences.
