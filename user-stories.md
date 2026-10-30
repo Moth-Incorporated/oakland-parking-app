@@ -2,9 +2,9 @@
 
 Users will be able to find parking spaces that are free, refresh the parking indicators, and improve the results by narrowing down the options in accordance with their needs.
 
-**Derived From:** (FR1) - Bugs and Errors, (FR3) - Refreshing.
+**Derived From:** (FR1) - Viewing Vacancies - General, (FR3) - Refresh.
 
-**Supporting Requirements:** (NFR1) - Refreshing Statuses, (NFR4) - Delay of Queries, and (NFR5) - Consequences of Network Failure.
+**Supporting Requirements:** (NFR1) - Refreshing Statuses, (NFR4) - Query Time, and (NFR5) - Network Failure Mitigation.
 
 ## US1: View Available Parking
 
@@ -83,10 +83,10 @@ MVP: no
 
 As a driver, I would like to have access to the parking information which I accessed recently even if there is no connectivity of the device so that I can refer to it when there is no internet traffic.
 
-FR: FR1  
+FR: FR13  
 NFR: NFR5  
 Priority: Should  
-MVP: yes
+MVP: no
 
 - [ ] When there is no communication line with the device, the application will continue to show the latest information available in its memory.
 - [ ] The lookup system will have the sign “Offline” to indicate that the application operates without any connectivity.
@@ -132,7 +132,7 @@ Users will be able to register their favorite parking spots, look at their list 
 
 **Derived From:** (FR6) - Favorites.
 
-**Supporting Requirement:** (NFR6) - Protection of Data Privacy.
+**Supporting Requirement:** (NFR6) - Data Privacy.
 
 ## US7: Viewing the Saved Area
 
