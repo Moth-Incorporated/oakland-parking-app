@@ -13,7 +13,7 @@ As a driver, I would like to know the total number of available parking slots in
 FR: FR1  
 NFR: NFR4  
 Priority: Must  
-MVP: TODO
+MVP: yes
 
 - [ ] It should be shown on the map the total number of available parking slots in the specified area.
 - [ ] The number of vacancies would be updated on the map in case of a map move or zooming in/out.
@@ -26,7 +26,7 @@ As a driver, I wish to manually refresh information about parking so that I can 
 
 FR: FR3  
 Priority: Must  
-MVP: TODO
+MVP: yes
 
 - [ ] The refresh control appears on the mapping of the parking area.
 - [ ] Once a user taps on the refresh control, relevant information is requested from the backend system.
@@ -38,10 +38,10 @@ MVP: TODO
 
 As a driver, I would like to have my parking statuses updated automatically while using the app, so I don’t have to refresh the map myself.
 
-FR: TODO  
+FR: FR1  
 NFR: NFR1  
 Priority: Must  
-MVP: TODO
+MVP: yes
 
 - [ ] While the app is running on the phone and the internet is available, parking statuses will be refreshed automatically every five minutes.
 - [ ] Automatic refreshing will obtain the parking status from the application server each time.
@@ -55,7 +55,7 @@ As a driver, I expect to filter parking places by their prices to select free sp
 FR: FR5  
 NFR: NFR4  
 Priority: Could  
-MVP: TODO
+MVP: no
 
 - [ ] Customers are able to set a price range for parking.
 - [ ] In the case of the selection of the option of free parking only, the search results will be only free parking spots.
@@ -71,7 +71,7 @@ As a driver, I hope to filter my parking lot based on the parking type, which en
 FR: FR5  
 NFR: NFR4  
 Priority: Could  
-MVP: TODO
+MVP: no
 
 - [ ] Having the ability to choose one or more types of parking spots, such as on-street, garage, and mentioned respectively, users receive only the spots matching selected type(s).
 - [ ] The parking categories that were not chosen will not be displayed among the filtered results.
@@ -86,7 +86,7 @@ As a driver, I would like to have access to the parking information which I acce
 FR: FR1  
 NFR: NFR5  
 Priority: Should  
-MVP: TODO
+MVP: yes
 
 - [ ] When there is no communication line with the device, the application will continue to show the latest information available in its memory.
 - [ ] The lookup system will have the sign “Offline” to indicate that the application operates without any connectivity.
@@ -101,7 +101,7 @@ As a driver, I want to filter parking options by the needed time frame for avail
 FR: FR5  
 NFR: NFR4  
 Priority: Could  
-MVP: TODO
+MVP: no
 
 - [ ] A person can set the needed time frame for parking.
 - [ ] The results show only the parking space available during the specified time frame based on information received from the system.
@@ -117,7 +117,7 @@ As a driver, I want to filter parking locations by minimum vehicle height cleara
 FR: FR5  
 NFR: NFR4  
 Priority: Should  
-MVP: TODO
+MVP: no
 
 - [ ] The user is able to provide a minimum vehicle height clearance requirement.
 - [ ] The results provide parking locations that meet or exceed the required clearance.
@@ -140,7 +140,7 @@ As a driver, I wish to see the precise places I have saved for parking in an exc
 
 FR: FR6  
 Priority: Must  
-MVP: TODO
+MVP: yes
 
 - [ ] The application must include a distinct screen for viewing saved favorites.
 - [ ] The viewed area must display the information related to saved car parks and their locations.
@@ -153,7 +153,7 @@ A driver would like to be able to put the places relevant to him/her first in th
 
 FR: FR6  
 Priority: Must  
-MVP: TODO
+MVP: yes
 
 - [ ] The individual can change the sequence of his/her saved preferences.
 - [ ] The application will illustrate the newly established sequence once the user changes its preferences.
