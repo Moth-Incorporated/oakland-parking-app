@@ -56,7 +56,7 @@ python run.py
 
 | Member | OS | Result |
 |---|---|---|
-| Dev | | |
+| Dev | macOS | Works: server starts, /health responds |
 | Kyu | | |
 | Nick | | |
 | Nile | | |
