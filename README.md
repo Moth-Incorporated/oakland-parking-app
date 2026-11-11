@@ -60,5 +60,5 @@ python run.py
 | Kyu | | |
 | Nick | Windows 11 | Works: server starts, /health (and other links) respond |
 | Nile | Windows 11 | Works: server starts, /health (and other links) respond |
-| Rohan | | |
+| Rohan | macOS | Works: server starts, /health (and other links) respond|
 | Siddharth | Windows 11 | Works: server starts, /health (and other links) respond |
