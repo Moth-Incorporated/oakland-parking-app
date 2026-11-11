@@ -57,7 +57,7 @@ python run.py
 | Member | OS | Result |
 |---|---|---|
 | Dev | macOS | Works: server starts, /health (and other links) respond |
-| Kyu | | |
+| Kyu | Windows 11 | Works: server starts, /health (and other links) respond |
 | Nick | Windows 11 | Works: server starts, /health (and other links) respond |
 | Nile | Windows 11 | Works: server starts, /health (and other links) respond |
 | Rohan | macOS | Works: server starts, /health (and other links) respond|
