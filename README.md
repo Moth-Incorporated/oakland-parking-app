@@ -8,12 +8,7 @@ Helps Pitt students, faculty, and visitors see where legal parking is available 
 |---|---|---|
 | Languages | Python (server), SQL (DB), HTML, CSS, JS (UI) | Python is very efficient for working with data, making it useful for our filtering and searching. SQL has very efficient data retrieval, which will make queries of large parking data sets quicker. HTML, CSS, and JS are very compatible with modern web browsers, making them an easy front end language choice. |
 | Frontend (planned) | Vercel (hosting) and React (library) | Vercel has very simple integration with GitHub and allows for seamless deployment. React enables our front end developers to create the UI code in a much more modular and reusable way. |
-| Backend | Python (language) and Flask (framework). | Python is a simple high level language that will be helpful to develop simple search algorithms and data maintenance with. Several of our group members have experience with Flask, and it is Python-based, integrating well with our language stack.
-
-**Design Goal 1** - Python’s efficient data slicing enables faster query times.
-
-**Design Goal 2** - Python and Flask seamless integration enables efficient API request handling, allowing for constant updating of data.
-|
+| Backend | Python (language) and Flask (framework). | Python is a simple high level language that will be helpful to develop simple search algorithms and data maintenance with. Several of our group members have experience with Flask, and it is Python-based, integrating well with our language stack. **Design Goal 1** - Python’s efficient data slicing enables faster query times. **Design Goal 2** - Python and Flask seamless integration enables efficient API request handling, allowing for constant updating of data.|
 | Database | OracleDB| Generous free tier for cloud hosted database. Also allows for SQL queries. |
 | APIs/external services | Third party parking spot reservation app (ex. ParkMobile) | Necessary for our redirection system to direct the user to a booking page. |
 
