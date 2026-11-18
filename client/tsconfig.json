@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    // Environment
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
+
+    // Vite builds the app; TypeScript only checks it
+    "noEmit": true,
+
+    // Checks
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "include": ["src", "vite.config.ts"]
+}
