@@ -1,4 +1,4 @@
-// main shit fr
+// main thing fr
 // create each piece of app and connect it
 
 import 'leaflet/dist/leaflet.css';
