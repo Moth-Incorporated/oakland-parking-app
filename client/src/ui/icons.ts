@@ -1,3 +1,5 @@
+// turns svg icon files into text other files can insert into page
+
 import bell from './icons/bell.svg?raw';
 import calendar from './icons/calendar.svg?raw';
 import car from './icons/car.svg?raw';
@@ -47,20 +49,25 @@ const ICONS = {
 
 export type IconName = keyof typeof ICONS;
 
-/** Returns the SVG text for an icon at a given pixel size. */
+// Returns the SVG text for an icon at a given pixel size
 export function icon(name: IconName, size = 22): string {
-  // Lucide files carry their own width, height, and class. Replace them on the
-  // opening <svg> tag only, so shapes inside (like <rect width=...>) stay intact.
-  return ICONS[name].replace(/<svg[^>]*>/, (tag) =>
-    tag
-      .replace(/\s(?:width|height|class)="[^"]*"/g, '')
-      .replace('<svg', `<svg class="icon" width="${size}" height="${size}" aria-hidden="true" focusable="false"`),
-  );
+  // takes the opening <svg ...> tag and returns it with our size and class instead of Lucide's
+  function rewriteTag(tag: string): string {
+    const withoutOldSizes = tag.replace(/\s(?:width|height|class)="[^"]*"/g, '');
+    return withoutOldSizes.replace(
+      '<svg',
+      `<svg class="icon" width="${size}" height="${size}" aria-hidden="true" focusable="false"`,
+    );
+  }
+
+  // only the opening tag is rewritten
+  return ICONS[name].replace(/<svg[^>]*>/, rewriteTag);
 }
 
-/** Fills every `<span data-icon="name" data-size="22">` with its SVG. */
+// Fills every `<span data-icon="name" data-size="22">` with its SVG
 export function hydrateIcons(root: ParentNode = document): void {
-  root.querySelectorAll<HTMLElement>('[data-icon]').forEach((el) => {
+  const spans = root.querySelectorAll<HTMLElement>('[data-icon]');
+  for (const el of spans) {
     el.innerHTML = icon(el.dataset.icon as IconName, Number(el.dataset.size ?? 22));
-  });
+  }
 }

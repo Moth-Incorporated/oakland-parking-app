@@ -1,7 +1,12 @@
-import { formatMiles, haversineMiles } from '../geo';
-import type { LatLng, Spot, SpotType, ViewState } from '../types';
-import { esc, formatTime } from './dom';
-import { icon } from './icons';
+// panel at bottom of screen. has 3 states:
+// peek: shows count of open spots
+// list: shows open spots in view, closest first (up to max rows)
+// detail: shows one spots card (with directions, reserve, and "wrong status?")
+
+import {formatMiles, distanceCalc} from '../geo';
+import type {LatLng, Spot, SpotType, ViewState} from '../types';
+import {esc, formatTime} from './dom';
+import {icon} from './icons';
 
 export interface SheetHandlers {
   onZoomIn(): void;
@@ -19,22 +24,56 @@ const TYPE_LABEL: Record<SpotType, string> = {
 };
 const MAX_ROWS = 50;
 
-/**
- * Bottom sheet. Three states:
- * peek (count only), list (open spots in view, closest first), detail (one spot).
- */
+// a spot in the list, with how far away it is
+interface SpotRow {
+  spot: Spot;
+  miles: number;
+}
+
+// finds the spot whose id matches, or undefined if there is none
+function findSpot(spots: Spot[], id: string | undefined): Spot | undefined {
+  for (const spot of spots) {
+    if (String(spot.id) === id) return spot;
+  }
+  return undefined;
+}
+
+// puts the closer spot first
+function byMiles(a: SpotRow, b: SpotRow): number {
+  return a.miles - b.miles;
+}
+
+// the HTML for one row in the list
+function rowHtml(row: SpotRow): string {
+  const spot = row.spot;
+  return `
+        <li>
+          <button class="spot-row" data-id="${spot.id}">
+            <span class="spot-row__icon">${icon(spot.type, 22)}</span>
+            <span class="spot-row__main">
+              <span class="spot-row__name">${esc(spot.name)}</span>
+              <span class="spot-row__sub">${TYPE_LABEL[spot.type]}, ${formatMiles(row.miles)}</span>
+            </span>
+            <span class="badge ${spot.isFree ? 'badge--free' : 'badge--paid'}">${spot.isFree ? 'Free' : 'Paid'}</span>
+          </button>
+        </li>`;
+}
+
+// Bottom sheet. Three states (peak, list, detail):
 export class Sheet {
+  private root: HTMLElement;
+  private origin: LatLng;
+  private handlers: SheetHandlers;
   private state: SheetState = 'peek';
   private view: ViewState = { zoom: 0, streetLevel: false, inView: [] };
   private selected: Spot | null = null;
   private fetchedAt = Date.now();
 
-  constructor(
-    private root: HTMLElement,
-    private origin: LatLng,
-    private handlers: SheetHandlers,
-  ) {
-    root.addEventListener('click', (e) => this.onClick(e));
+  constructor(root: HTMLElement, origin: LatLng, handlers: SheetHandlers) {
+    this.root = root;
+    this.origin = origin;
+    this.handlers = handlers;
+    root.addEventListener('click', this.onClick.bind(this));
     this.render(false);
   }
 
@@ -71,12 +110,13 @@ export class Sheet {
     }
   }
 
+  // runs for every click inside the sheet
   private onClick(e: Event): void {
     const target = (e.target as HTMLElement).closest<HTMLElement>('[data-act],[data-id]');
     if (!target) return;
 
     if (target.dataset.id !== undefined) {
-      const spot = this.view.inView.find((s) => String(s.id) === target.dataset.id);
+      const spot = findSpot(this.view.inView, target.dataset.id);
       if (spot) this.handlers.onSelect(spot);
       return;
     }
@@ -129,29 +169,18 @@ export class Sheet {
   }
 
   private listHtml(): string {
-    const rows = this.view.inView
-      .map((spot) => ({ spot, miles: haversineMiles(this.origin, spot) }))
-      .sort((a, b) => a.miles - b.miles)
-      .slice(0, MAX_ROWS);
+    // every open spot in view, with its distance, closest first, up to MAX_ROWS
+    const rows: SpotRow[] = [];
+    for (const spot of this.view.inView) {
+      rows.push({ spot, miles: distanceCalc(this.origin, spot) });
+    }
+    rows.sort(byMiles);
+    const shown = rows.slice(0, MAX_ROWS);
 
-    if (rows.length === 0) {
+    if (shown.length === 0) {
       return '<div class="sheet__body"><p class="sheet__empty">No open spots in this view. Pan the map or zoom out.</p></div>';
     }
-    const items = rows
-      .map(
-        ({ spot, miles }) => `
-        <li>
-          <button class="spot-row" data-id="${spot.id}">
-            <span class="spot-row__icon">${icon(spot.type, 22)}</span>
-            <span class="spot-row__main">
-              <span class="spot-row__name">${esc(spot.name)}</span>
-              <span class="spot-row__sub">${TYPE_LABEL[spot.type]}, ${formatMiles(miles)}</span>
-            </span>
-            <span class="badge ${spot.isFree ? 'badge--free' : 'badge--paid'}">${spot.isFree ? 'Free' : 'Paid'}</span>
-          </button>
-        </li>`,
-      )
-      .join('');
+    const items = shown.map(rowHtml).join('');
     return `
       <div class="sheet__body">
         <p class="sheet__meta">Closest first. Updated ${formatTime(this.fetchedAt)}.</p>
@@ -160,8 +189,8 @@ export class Sheet {
   }
 
   private detailHtml(spot: Spot): string {
-    const miles = formatMiles(haversineMiles(this.origin, spot));
-    const directions = `https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}`;
+    const miles = formatMiles(distanceCalc(this.origin, spot));
+    const directions = `https://www.google.com/maps/dir/?api=1&destination=${spot.latitude},${spot.longitude}`;
     return `
       <div class="detail">
         <div class="detail__top">

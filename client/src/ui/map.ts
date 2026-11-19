@@ -1,6 +1,9 @@
+// only file that talks to leaflet
+// draws map, gold count bubbles, F and $ pins, and blue dot for user position
+
 import * as L from 'leaflet';
-import { clusterSpots, STREET_ZOOM, type Cluster } from '../geo';
-import type { LatLng, Spot, ViewState } from '../types';
+import {clusterSpots, STREET_ZOOM, type Cluster} from '../geo';
+import type {LatLng, Spot, ViewState} from '../types';
 
 export interface MapHandlers {
     onSelect(spot: Spot): void;
@@ -10,22 +13,24 @@ export interface MapHandlers {
 
 const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/**
- * Leaflet wrapper. Zoomed out, vacant spots collapse into gold count bubbles (FR1/FR8).
- * At street level (zoom 17+) every vacant spot becomes its own tappable pin with an F or $ badge (FR2).
- */
+// true if the spot is open
+function isVacant(spot: Spot): boolean {
+    return spot.status === 'vacant';
+}
+
+// Leaflet wrapper. Zoomed out, vacant spots collapse into gold count bubbles
+// At street level (zoom 17+) every vacant spot becomes its own tappable pin with an F or $ badge
 export class ParkingMap {
     private map: L.Map;
+    private handlers: MapHandlers;
     private markers = L.layerGroup();
     private spots: Spot[] = [];
     private selectedId: number | null = null;
     private me: L.Marker | null = null;
 
-    constructor(
-        el: HTMLElement,
-        center: LatLng,
-        private handlers: MapHandlers,
-    ) {
+    constructor(el: HTMLElement, center: LatLng, handlers: MapHandlers) {
+        this.handlers = handlers;
+
         this.map = L.map(el, {
             zoomControl: false,
             minZoom: 12,
@@ -33,7 +38,7 @@ export class ParkingMap {
             zoomAnimation: !reduceMotion,
             fadeAnimation: !reduceMotion,
             markerZoomAnimation: !reduceMotion,
-        }).setView([center.lat, center.lng], 16);
+        }).setView([center.latitude, center.longitude], 16);
 
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
@@ -42,9 +47,9 @@ export class ParkingMap {
         L.control.zoom({ position: 'bottomright' }).addTo(this.map);
         this.markers.addTo(this.map);
 
-        this.map.on('zoomend', () => this.render());
-        this.map.on('moveend', () => this.emitView());
-        this.map.on('click', () => this.handlers.onBackgroundTap());
+        this.map.on('zoomend', this.render.bind(this));
+        this.map.on('moveend', this.emitView.bind(this));
+        this.map.on('click', this.onMapClick.bind(this));
     }
 
     setSpots(spots: Spot[]): void {
@@ -59,10 +64,10 @@ export class ParkingMap {
 
     setUser(pos: LatLng): void {
         if (this.me) {
-            this.me.setLatLng([pos.lat, pos.lng]);
+            this.me.setLatLng([pos.latitude, pos.longitude]);
             return;
         }
-        this.me = L.marker([pos.lat, pos.lng], {
+        this.me = L.marker([pos.latitude, pos.longitude], {
             icon: L.divIcon({ className: 'me-wrap', html: '<span class="me"></span>', iconSize: [44, 44], iconAnchor: [22, 22] }),
             interactive: false,
             keyboard: false,
@@ -71,20 +76,20 @@ export class ParkingMap {
     }
 
     flyTo(pos: LatLng, zoom: number): void {
-        this.go([pos.lat, pos.lng], zoom);
+        this.go([pos.latitude, pos.longitude], zoom);
     }
 
-    /** Jump to street level around the current center (the sheet's "Zoom in" action). */
+    // Jump to street level around the current center 
     zoomToStreets(): void {
         const c = this.map.getCenter();
         this.go([c.lat, c.lng], STREET_ZOOM);
     }
 
-    /** Centers a spot slightly above the middle so the detail sheet does not cover it. */
+    // centers a spot slightly above middle so the detail sheet does not cover it
     focusSpot(spot: Spot): void {
         const zoom = Math.max(this.map.getZoom(), STREET_ZOOM);
         const shifted = this.map
-            .project([spot.lat, spot.lng], zoom)
+            .project([spot.latitude, spot.longitude], zoom)
             .add([0, Math.round(this.map.getSize().y * 0.18)]);
         const target = this.map.unproject(shifted, zoom);
         this.go([target.lat, target.lng], zoom);
@@ -95,9 +100,14 @@ export class ParkingMap {
         else this.map.flyTo(target, zoom, { duration: 0.6 });
     }
 
+    // runs when the user taps empty map
+    private onMapClick(): void {
+        this.handlers.onBackgroundTap();
+    }
+
     private render(): void {
         this.markers.clearLayers();
-        const vacant = this.spots.filter((s) => s.status === 'vacant');
+        const vacant = this.spots.filter(isVacant);
         const zoom = this.map.getZoom();
         if (zoom >= STREET_ZOOM) {
             for (const spot of vacant) this.markers.addLayer(this.spotMarker(spot));
@@ -110,17 +120,24 @@ export class ParkingMap {
     private emitView(): void {
         const bounds = this.map.getBounds();
         const zoom = this.map.getZoom();
+
+        // true if the spot is open and inside the visible part of the map
+        function isVacantAndInView(spot: Spot): boolean {
+            return spot.status === 'vacant' && bounds.contains([spot.latitude, spot.longitude]);
+        }
+
         this.handlers.onViewChange({
             zoom,
             streetLevel: zoom >= STREET_ZOOM,
-            inView: this.spots.filter((s) => s.status === 'vacant' && bounds.contains([s.lat, s.lng])),
+            inView: this.spots.filter(isVacantAndInView),
         });
     }
 
     private spotMarker(spot: Spot): L.Marker {
+        const handlers = this.handlers;
         const selected = spot.id === this.selectedId;
         const classes = `pin ${spot.isFree ? 'pin--free' : 'pin--paid'}${selected ? ' pin--selected' : ''}`;
-        const marker = L.marker([spot.lat, spot.lng], {
+        const marker = L.marker([spot.latitude, spot.longitude], {
             icon: L.divIcon({
                 className: 'pin-wrap',
                 html: `<span class="${classes}">${spot.isFree ? 'F' : '$'}</span>`,
@@ -131,13 +148,20 @@ export class ParkingMap {
             keyboard: true,
             zIndexOffset: selected ? 500 : 0,
         });
-        marker.on('click', () => this.handlers.onSelect(spot));
+
+        // runs when this pin is tapped
+        function onClick(): void {
+            handlers.onSelect(spot);
+        }
+
+        marker.on('click', onClick);
         return marker;
     }
 
     private clusterMarker(cluster: Cluster, zoom: number): L.Marker {
+        const go = this.go.bind(this);
         const size = Math.round(42 + Math.min(Math.sqrt(cluster.count) * 5, 24));
-        const marker = L.marker([cluster.lat, cluster.lng], {
+        const marker = L.marker([cluster.latitude, cluster.longitude], {
             icon: L.divIcon({
                 className: 'cluster-wrap',
                 html: `<span class="cluster" style="width:${size}px;height:${size}px">${cluster.count}</span>`,
@@ -147,7 +171,13 @@ export class ParkingMap {
             title: `${cluster.count} open spot${cluster.count === 1 ? '' : 's'}. Zoom in.`,
             keyboard: true,
         });
-        marker.on('click', () => this.go([cluster.lat, cluster.lng], Math.min(zoom + 2, STREET_ZOOM)));
+
+        // runs when this bubble is tapped: zoom in on it
+        function onClick(): void {
+            go([cluster.latitude, cluster.longitude], Math.min(zoom + 2, STREET_ZOOM));
+        }
+
+        marker.on('click', onClick);
         return marker;
     }
 }
