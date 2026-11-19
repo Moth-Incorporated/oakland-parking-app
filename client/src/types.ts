@@ -2,8 +2,8 @@ export type SpotType = 'street' | 'garage' | 'surface';
 export type SpotStatus = 'vacant' | 'occupied';
 
 export interface LatLng {
-  lat: number;
-  lng: number;
+  latitude: number;
+  longitude: number;
 }
 
 export interface Spot extends LatLng {

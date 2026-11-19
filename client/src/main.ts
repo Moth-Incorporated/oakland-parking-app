@@ -1,24 +1,27 @@
+// main shit fr
+// create each piece of app and connect it
+
 import 'leaflet/dist/leaflet.css';
 import './styles/tokens.css';
 import './styles/app.css';
 
-import { DEFAULT_RADIUS_MILES, getSnapshot } from './api';
-import { haversineMiles } from './geo';
-import { startAutoRefresh } from './quality-system/refresh';
-import type { LatLng, Snapshot, Spot } from './types';
-import { Banner } from './ui/banner';
-import { Drawer } from './ui/drawer';
-import { byId } from './ui/dom';
-import { hydrateIcons } from './ui/icons';
-import { ParkingMap } from './ui/map';
-import { SearchOverlay } from './ui/search';
-import { Sheet } from './ui/sheet';
-import { StatusChip } from './ui/status';
+import {DEFAULT_RADIUS_MILES, getSnapshot} from './api';
+import {distanceCalc} from './geo';
+import {startAutoRefresh} from './quality-system/refresh';
+import type {LatLng, Snapshot, Spot, ViewState} from './types';
+import {Banner} from './ui/banner';
+import {Drawer} from './ui/drawer';
+import {byId} from './ui/dom';
+import {hydrateIcons} from './ui/icons';
+import {ParkingMap} from './ui/map';
+import {SearchOverlay} from './ui/search';
+import {Sheet} from './ui/sheet';
+import {StatusChip} from './ui/status';
 
-// Cathedral of Learning. The app is for Oakland, so this is the fallback center.
-const OAKLAND: LatLng = { lat: 40.4444, lng: -79.9532 };
-const NEAR_CAMPUS_MILES = 3;
-const DEFAULT_ZOOM = 16;
+// Cathedral of Learning. app is for Oakland, so this is fallback center.
+const OAKLAND: LatLng = {latitude: 40.4444, longitude: -79.9532};
+const NEAR_CAMPUS_MILES = 3; // have to be within 3 miles of campus
+const DEFAULT_ZOOM = 16; // starting zoom level
 
 hydrateIcons();
 
@@ -31,24 +34,55 @@ let current: Snapshot | null = null;
 let selected: Spot | null = null;
 let loading = false;
 
-// The point distances are measured from: the user if they are near campus, otherwise campus itself.
-const origin = (): LatLng => (userPos && haversineMiles(userPos, OAKLAND) <= NEAR_CAMPUS_MILES ? userPos : OAKLAND);
+// The point distances are measured from. If on campus, youre origin, if not its campus
+function origin(): LatLng {
+  if (userPos && distanceCalc(userPos, OAKLAND) <= NEAR_CAMPUS_MILES) return userPos;
+  return OAKLAND;
+}
+
+// functions the sheet calls when something happens
+function zoomToStreets(): void {
+  map.zoomToStreets();
+}
+
+function closeDetail(): void {
+  clearSelection(true);
+}
+
+function showBanner(message: string): void {
+  banner.show(message);
+}
 
 const sheet = new Sheet(byId('sheet'), OAKLAND, {
-  onZoomIn: () => map.zoomToStreets(),
-  onSelect: (spot) => selectSpot(spot),
-  onCloseDetail: () => clearSelection(true),
-  onBanner: (message) => banner.show(message),
+  onZoomIn: zoomToStreets,
+  onSelect: selectSpot,
+  onCloseDetail: closeDetail,
+  onBanner: showBanner,
 });
 
-// Lets the banner and Leaflet's controls sit above the sheet however tall it is.
+// lets banner and leaflet's controls sit above the sheet
 const sheetEl = byId('sheet');
-new ResizeObserver(() => document.documentElement.style.setProperty('--sheet-h', `${sheetEl.offsetHeight}px`)).observe(sheetEl);
+
+function updateSheetHeight(): void {
+  document.documentElement.style.setProperty('--sheet-h', `${sheetEl.offsetHeight}px`);
+}
+
+new ResizeObserver(updateSheetHeight).observe(sheetEl);
+
+// functions the map calls when something happens
+function updateSheet(view: ViewState): void {
+  sheet.update(view);
+}
+
+function handleBackgroundTap(): void {
+  if (selected) clearSelection(false);
+  else sheet.collapse();
+}
 
 const map = new ParkingMap(byId('map'), OAKLAND, {
-  onSelect: (spot) => selectSpot(spot),
-  onViewChange: (view) => sheet.update(view),
-  onBackgroundTap: () => (selected ? clearSelection(false) : sheet.collapse()),
+  onSelect: selectSpot,
+  onViewChange: updateSheet,
+  onBackgroundTap: handleBackgroundTap,
 });
 
 function selectSpot(spot: Spot): void {
@@ -64,7 +98,17 @@ function clearSelection(moveFocus: boolean): void {
   map.select(null);
 }
 
-const auto = startAutoRefresh(() => void refresh(false));
+// runs every 5 minutes
+function autoRefresh(): void {
+  void refresh(false);
+}
+
+const auto = startAutoRefresh(autoRefresh);
+
+// true if this spot is the one the user selected and it is still open
+function isSelectedSpotOpen(spot: Spot): boolean {
+  return selected !== null && spot.id === selected.id && spot.status === 'vacant';
+}
 
 async function refresh(manual: boolean): Promise<void> {
   if (loading) return;
@@ -84,7 +128,7 @@ async function refresh(manual: boolean): Promise<void> {
   delete refreshBtn.dataset.loading;
   auto.markRefreshed();
 
-  if (selected && !snapshot.spots.some((s) => s.id === selected!.id && s.status === 'vacant')) {
+  if (selected && !snapshot.spots.some(isSelectedSpotOpen)) {
     banner.show('That spot was just taken.');
     clearSelection(false);
   } else if (manual && snapshot.source === 'server') {
@@ -92,45 +136,91 @@ async function refresh(manual: boolean): Promise<void> {
   }
 }
 
-function locate(announce: boolean): void {
-  const fallback = () => map.flyTo(OAKLAND, DEFAULT_ZOOM);
-  if (!navigator.geolocation) {
-    if (announce) banner.show('This browser cannot share your location.');
-    return fallback();
-  }
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      map.setUser(userPos);
-      sheet.setOrigin(origin());
-      if (haversineMiles(userPos, OAKLAND) <= NEAR_CAMPUS_MILES) {
-        map.flyTo(userPos, DEFAULT_ZOOM);
-      } else {
-        if (announce) banner.show('You are outside Oakland, so the map is showing campus.');
-        fallback();
-      }
-    },
-    () => {
-      if (announce) banner.show('Location is off. Allow location access to center the map on you.');
-      fallback();
-    },
-    { enableHighAccuracy: true, timeout: 8000 },
-  );
+// moves the map to campus
+function flyToCampus(): void {
+  map.flyTo(OAKLAND, DEFAULT_ZOOM);
 }
 
-const drawer = new Drawer(byId('drawer'), (label) => banner.show(`${label} is coming in a later sprint.`));
+function locate(announce: boolean): void {
+  // runs when the browser gives us the user's position
+  function onFound(pos: GeolocationPosition): void {
+    userPos = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+    map.setUser(userPos);
+    sheet.setOrigin(origin());
+    if (distanceCalc(userPos, OAKLAND) <= NEAR_CAMPUS_MILES) {
+      map.flyTo(userPos, DEFAULT_ZOOM);
+    } else {
+      if (announce) banner.show('You are outside Oakland, so the map is showing campus.');
+      flyToCampus();
+    }
+  }
+
+  // runs when the browser cannot or will not give us the position
+  function onDenied(): void {
+    if (announce) banner.show('Location is off. Allow location access to center the map on you.');
+    flyToCampus();
+  }
+
+  if (!navigator.geolocation) {
+    if (announce) banner.show('This browser cannot share your location.');
+    flyToCampus();
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(onFound, onDenied, { enableHighAccuracy: true, timeout: 8000 });
+}
+
+// shows a message for menu entries that are not built yet
+function showComingSoon(label: string): void {
+  banner.show(`${label} is coming in a later sprint.`);
+}
+
+const drawer = new Drawer(byId('drawer'), showComingSoon);
+
+function isVacant(spot: Spot): boolean {
+  return spot.status === 'vacant';
+}
+
+function getVacantSpots(): Spot[] {
+  if (current === null) return [];
+  return current.spots.filter(isVacant);
+}
+
+function goTo(pos: LatLng): void {
+  map.flyTo(pos, DEFAULT_ZOOM);
+}
+
 const search = new SearchOverlay(byId('search'), {
-  getSpots: () => current?.spots.filter((s) => s.status === 'vacant') ?? [],
+  getSpots: getVacantSpots,
   origin,
-  onGoTo: (pos) => map.flyTo(pos, DEFAULT_ZOOM),
+  onGoTo: goTo,
   onSelectSpot: selectSpot,
 });
 
-byId('menu-btn').addEventListener('click', () => drawer.open());
-byId('search-btn').addEventListener('click', () => search.open());
-byId('locate-btn').addEventListener('click', () => locate(true));
-refreshBtn.addEventListener('click', () => void refresh(true));
-window.addEventListener('online', () => void refresh(false));
+function openMenu(): void {
+  drawer.open();
+}
+
+function openSearch(): void {
+  search.open();
+}
+
+function onLocateClick(): void {
+  locate(true);
+}
+
+function onRefreshClick(): void {
+  void refresh(true);
+}
+
+function onOnline(): void {
+  void refresh(false);
+}
+
+byId('menu-btn').addEventListener('click', openMenu);
+byId('search-btn').addEventListener('click', openSearch);
+byId('locate-btn').addEventListener('click', onLocateClick);
+refreshBtn.addEventListener('click', onRefreshClick);
+window.addEventListener('online', onOnline);
 
 void refresh(false);
 locate(false);
