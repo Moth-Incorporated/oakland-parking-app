@@ -1,4 +1,4 @@
-/* ---------- Base ---------- */
+/* base*/
 *,
 *::before,
 *::after {
@@ -54,7 +54,6 @@ a {
   overflow: hidden;
 }
 
-/* z-index creates a stacking context so Leaflet's internal layers stay under our UI. */
 #map {
   position: absolute;
   inset: 0;
@@ -62,7 +61,7 @@ a {
   background: #e9edf3;
 }
 
-/* ---------- Top bar ---------- */
+/* top bar */
 .topbar {
   position: absolute;
   z-index: 10;
@@ -171,7 +170,7 @@ a {
   animation: spin 0.8s linear infinite;
 }
 
-/* ---------- Map markers ---------- */
+/* map markers*/
 .cluster-wrap,
 .pin-wrap,
 .me-wrap {
@@ -271,7 +270,7 @@ a {
   }
 }
 
-/* ---------- Bottom sheet ---------- */
+/* bottom */
 .sheet {
   position: absolute;
   z-index: 20;
@@ -551,7 +550,7 @@ a {
   box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.25);
 }
 
-/* ---------- Menu drawer ---------- */
+/* menu */
 .drawer {
   position: absolute;
   inset: 0;
@@ -681,7 +680,7 @@ a {
   color: var(--on-navy-muted);
 }
 
-/* ---------- Search overlay ---------- */
+/* search overlay */
 .search {
   position: absolute;
   inset: 0;
@@ -825,7 +824,7 @@ a {
   font-weight: 400;
 }
 
-/* ---------- Banner (pop-up messages) ---------- */
+/* banner (pop-up messages) */
 .banner {
   position: absolute;
   z-index: 60;
