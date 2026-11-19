@@ -15,7 +15,7 @@ import { SearchOverlay } from './ui/search';
 import { Sheet } from './ui/sheet';
 import { StatusChip } from './ui/status';
 
-/** Cathedral of Learning. The app is for Oakland, so this is the fallback center. */
+// Cathedral of Learning. The app is for Oakland, so this is the fallback center.
 const OAKLAND: LatLng = { lat: 40.4444, lng: -79.9532 };
 const NEAR_CAMPUS_MILES = 3;
 const DEFAULT_ZOOM = 16;
@@ -31,7 +31,7 @@ let current: Snapshot | null = null;
 let selected: Spot | null = null;
 let loading = false;
 
-/** The point distances are measured from: the user if they are near campus, otherwise campus itself. */
+// The point distances are measured from: the user if they are near campus, otherwise campus itself.
 const origin = (): LatLng => (userPos && haversineMiles(userPos, OAKLAND) <= NEAR_CAMPUS_MILES ? userPos : OAKLAND);
 
 const sheet = new Sheet(byId('sheet'), OAKLAND, {
