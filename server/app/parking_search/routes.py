@@ -20,5 +20,16 @@ def search():
     if not validate_radius(radius):
         return jsonify(error="Radius must be under 5 miles"), 400
 
-    spots = search_spots(MOCK_SPOTS, lat, lng, radius)
+
+    filters = {
+        "is_covered": request.args.get(
+            "is_covered", default="false"
+        ).lower() == "true",
+
+        "is_handicapped": request.args.get(
+            "is_handicapped", default="false"
+        ).lower() == "true"
+    }
+
+    spots = search_spots(MOCK_SPOTS, lat, lng, radius, filters)
     return jsonify(count=len(spots), spots=spots, fetchedAt=int(time.time() * 1000))
