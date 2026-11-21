@@ -1,11 +1,42 @@
-# name: Oakland Parking App Pipeline
+name: Oakland Parking App Pipeline
 
-# on:
-#  push:
-#    branches: ["main"]
-#  pull_request:
-#    branches: ["main"]
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-# env:
-#  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+jobs:
+  server:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: server
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: server/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pytest
+
+      - name: Build (compile code and create the Flask app)
+        run: |
+          python -m compileall -q app run.py
+          python -c "from app import create_app; create_app()"
+
+      - name: Run tests
+        run: pytest -v
