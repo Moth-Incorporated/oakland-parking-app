@@ -5,7 +5,8 @@ MAX_RADIUS_MILES = 5
 
 
 def validate_radius(radius):
-    return radius is not None and math.isfinite(radius) and 0 < radius < MAX_RADIUS_MILES
+    return radius is not None and math.isfinite(radius) and 0 < radius <= MAX_RADIUS_MILES
+    # return radius is not None and math.isfinite(radius) and 0 < radius < MAX_RADIUS_MILES
 
 
 def miles_between(lat1, lng1, lat2, lng2):
