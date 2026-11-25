@@ -43,7 +43,7 @@ def search_spots(spots, lat, lng, radius, filters=None):
         if filters.get("is_covered") and not spot.get("is_covered", False):
             continue
 
-        if filters.get("is_handicapped") and not spot.get("is_handicap", False):
+        if filters.get("is_handicapped") and not spot.get("is_handicapped", False):
             continue
 
         matching_spots.append(spot)
