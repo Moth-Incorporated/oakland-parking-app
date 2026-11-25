@@ -12,23 +12,14 @@ const TIMEOUT_MS = 5000;
 const API_BASE: string = import.meta.env.VITE_API_BASE ?? '';
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
-// Request body, in the format from the team's data formats doc.
-interface SearchRequest {
-  location: { latitude: number; longitude: number };
-  filters: {
-    'search_radius (miles)': number;
-    is_covered: string;
-    //is_ev_charging: string;
-    is_handicapped: string;
-  };
-}
 
-// doc's output has id, latitude, longitude. Everything
-// else is optional until the team settles the final format.
+
+// changed latitude and longitude vars to be named lat and lng bc that's how server sends it
+// seemed easier to change var names on client side than server side
 interface RawSpot {
   id: number;
-  latitude: number;
-  longitude: number;
+  lat: number;
+  lng: number;
   name?: string;
   type?: string;
   status?: string;
@@ -40,12 +31,12 @@ type RawResponse = RawSpot[] | {spots: RawSpot[]; fetchedAt?: number};
 const SPOT_TYPES: SpotType[] = ['street', 'garage', 'surface'];
 
 function toSpot(raw: RawSpot): Spot | null {
-  if (typeof raw.latitude !== 'number' || typeof raw.longitude !== 'number') return null;
+  if (typeof raw.lat !== 'number' || typeof raw.lng !== 'number') return null;
   return {
     id: raw.id,
     name: raw.name ?? `Spot ${raw.id}`,
-    latitude: raw.latitude,
-    longitude: raw.longitude,
+    latitude: raw.lat,
+    longitude: raw.lng,
     type: SPOT_TYPES.includes(raw.type as SpotType) ? (raw.type as SpotType) : 'street',
     status: raw.status === 'occupied' ? 'occupied' : 'vacant',
     isFree: raw.is_free ?? false,
@@ -57,15 +48,14 @@ function isSpot(s: Spot | null): s is Spot {
 }
 
 async function fetchLive(center: LatLng, radiusMiles: number): Promise<Snapshot> {
-  const request: SearchRequest = {
-    location: center,
-    filters: {
-      'search_radius (miles)': Math.min(radiusMiles, MAX_RADIUS_MILES),
-      is_covered: 'False',
-      //is_ev_charging: 'False',
-      is_handicapped: 'False',
-    },
-  };
+
+  // creating url params object so we can pass in the "params" var to the fetch() method url
+  // if we're going to add other filters to the search, add them in this URLSearchParams object
+  const params = new URLSearchParams({
+    lat: String(center.latitude),
+    lng: String(center.longitude),
+    radius: String(radiusMiles),
+  });
 
   const controller = new AbortController();
 
@@ -75,10 +65,9 @@ async function fetchLive(center: LatLng, radiusMiles: number): Promise<Snapshot>
   const timer = window.setTimeout(cancelRequest, TIMEOUT_MS);
 
   try {
-    const response = await fetch(`${API_BASE}/api/search`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request),
+    // using params var in fetch() method url
+    const response = await fetch(`${API_BASE}/api/search?${params}`, {
+      method: 'GET',
       signal: controller.signal,
     });
     if (!response.ok) throw new Error(`Search failed with status ${response.status}`);

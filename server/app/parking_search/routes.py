@@ -2,7 +2,8 @@ import time
 
 from flask import Blueprint, jsonify, request
 
-from .mock_spots import MOCK_SPOTS
+# replacing mock data with Rohan's generated data
+from .vacancy_data import generate_vacancies
 from .search_algorithm import search_spots, validate_radius
 
 parking_search_bp = Blueprint("parking_search", __name__)
@@ -31,5 +32,7 @@ def search():
         ).lower() == "true"
     }
 
-    spots = search_spots(MOCK_SPOTS, lat, lng, radius, filters)
+    # use Rohan's script to generate vacancy data, which gets passed to search_spots function
+    vacancies = generate_vacancies()
+    spots = search_spots(vacancies, lat, lng, radius, filters)
     return jsonify(count=len(spots), spots=spots, fetchedAt=int(time.time() * 1000))
