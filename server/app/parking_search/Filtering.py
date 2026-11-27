@@ -11,4 +11,4 @@ import requests
 response = requests.get("https://ip-api.com", timeout=5).json()
 iana_tz = response.get("timezone", "UTC")
 
-Local_time = datetime.now(ZoneInfo(iana_tz)
+Local_time = datetime.now(ZoneInfo(iana_tz))
